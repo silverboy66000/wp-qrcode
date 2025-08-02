@@ -193,9 +193,22 @@ function show_qrcode_info_shortcode() {
     <label class="form-label">شماره موبایل:</label>
     <input type="text" class="form-control" name="phone" value="' . esc_attr($data->phone) . '" required>
 </div>';
-            $output .= '<div class="col-md-2">
+        }
+        else
+        {
+            $output .= '<div class="col-md-8">
+    <label class="form-label">شماره موبایل:</label>
+    <input type="text" class="form-control" style="background-color: #d9d6d6" readonly="readonly" value="' . esc_attr($data->phone) . '"  disabled="disabled">
 </div>';
         }
+
+        $output .= '<div class="col-md-2">
+    <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" name="show_last_name" value="1" ' . checked($data->show_phone, 1, false) . '>
+        <label class="form-check-label">نمایش داده شود</label>
+    </div>
+</div>';
+
 
 
         $output .= '</div>'; // end row
@@ -204,7 +217,7 @@ function show_qrcode_info_shortcode() {
     <input type="submit" class="btn btn-primary" name="send_otp" value="ارسال کد تأیید">
 </div>';
 
-        $output .= '</form>';
+        $output .= '</form></div>';
 
         return $output;
     }
