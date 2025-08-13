@@ -270,7 +270,7 @@ function send_sms_ir_otp($mobile, $otp) {
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS =>'{
-        "mobile": "09124525319",
+        "mobile": "'.$mobile.'",
         "templateId": 533762,
         "parameters": [
           {
@@ -300,7 +300,7 @@ function send_sms($mobile, $message) {
     $url = 'https://api.sms.ir/v1/send';
 
     $data = [
-        "mobile" => '09124525319',
+        "mobile" => $mobile,
         "message" => $message,
         "lineNumber" => $lineNumber
     ];
