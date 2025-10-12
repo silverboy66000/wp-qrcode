@@ -76,6 +76,8 @@ require_once plugin_dir_path(__FILE__) . 'qrcode-view-logs.php';
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css');
     wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', [], null, true);
+    wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', [], null, true);
+    wp_enqueue_script('bootstrap-js', 'assets/css/persianDatepicker-default.css', [], null, true);
 });
 
 function show_qrcode_info_shortcode() {
@@ -342,3 +344,25 @@ function get_location_by_ip($ip) {
 
 
 add_shortcode('show_qrcode_info', 'show_qrcode_info_shortcode');
+
+
+function my_plugin_enqueue_assets() {
+    // CSS
+    wp_enqueue_style(
+        'persian-datepicker-style',
+        plugin_dir_url(__FILE__) . 'assets/css/persianDatepicker-default.css'
+    );
+
+    // jQuery (وردپرس خودش jQuery داره، نیازی نیست دوباره لود بشه)
+    wp_enqueue_script('jquery');
+
+    // Persian Datepicker JS
+    wp_enqueue_script(
+        'persian-datepicker',
+        plugin_dir_url(__FILE__) . 'assets/js/persianDatepicker.min.js',
+        array('jquery'),
+        null,
+        true
+    );
+}
+add_action('admin_enqueue_scripts', 'my_plugin_enqueue_assets');
