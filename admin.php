@@ -185,7 +185,13 @@ function qrcode_admin_page() {
     <hr>
     <form >
         <input type="hidden" name="page" value="qrcode-users">
-        <button id="exportBTN" type="submit" name="export_selected_pdf" class="button button-primary" style="margin-top:10px;">📄 خروجی انتخاب‌شده‌ها به PDF</button>
+        <select name="type">
+            <option>انتخاب وضعیت</option>
+            <option value="pdf">©️ PDF انتخاب‌شده‌ها</option>
+            <option value="delete">❌ حذف انتخاب‌شده‌ها </option>
+        </select>
+        <button type="submit" name="export_selected_pdf" class="button button-primary">✅ اجرا</button>
+        <br>
         <br>
         <table class="wp-list-table widefat fixed striped">
             <thead>
@@ -249,7 +255,7 @@ function qrcode_admin_page() {
         document.getElementById("select-all").addEventListener("click", function(e) {
             const checked = e.target.checked;
             document.querySelectorAll("input[name='selected_ids[]']").forEach(cb => cb.checked = checked);
-            document.getElementById('exportBTN').style.display = checked ? 'block' : 'none';
+          //  document.getElementById('exportBTN').style.display = checked ? 'block' : 'none';
         });
     </script>
     <style>
@@ -269,9 +275,9 @@ function qrcode_admin_page() {
             white-space: nowrap;
             box-sizing: border-box;
         }
-        #exportBTN {
-            display: none;
-        }
+        /*#exportBTN {*/
+        /*    display: none;*/
+        /*}*/
     </style>
     </div>
     <?php
@@ -344,39 +350,57 @@ if (isset($_GET['export_selected_pdf']) && !empty($_GET['selected_ids'])) {
     require_once plugin_dir_path(__FILE__) . '/vendor/autoload.php';
     $upload_dir = wp_upload_dir();
     $dir = $upload_dir['basedir'] . '/qrcodes/';
-
     $table = $wpdb->prefix . 'qrcode_users';
     $ids = array_map('intval', $_GET['selected_ids']);
     $ids_placeholders = implode(',', array_fill(0, count($ids), '%d'));
-    $query = $wpdb->prepare("SELECT * FROM $table WHERE id IN ($ids_placeholders)", ...$ids);
-    $selected_users = $wpdb->get_results($query);
 
-    if (ob_get_length()) ob_end_clean();
+    if ($_GET['type'] === 'pdf') {
 
-    ob_start();
-    echo '<table border="1" cellpadding="5" cellspacing="0"><tbody>';
-    foreach ($selected_users as $user) {
-        $file_url  = $upload_dir['baseurl'] . '/qrcodes/' . $user->unique_id . '.png';
+        $query = $wpdb->prepare("SELECT * FROM $table WHERE id IN ($ids_placeholders)", ...$ids);
+        $selected_users = $wpdb->get_results($query);
 
-        //$qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" . urlencode(site_url('/qrcode-info/?uid=' . $user->unique_id));
-       // $imageData = download_image($qr_url);
-       // $src = 'data:image/png;base64,' . base64_encode($imageData);
-        echo '<tr><td style="text-align:center;"><img src="' . $file_url . '"><hr></td></tr>';
+        if (ob_get_length()) ob_end_clean();
+
+        ob_start();
+        echo '<table border="1" cellpadding="5" cellspacing="0"><tbody>';
+        foreach ($selected_users as $user) {
+            $file_url  = $upload_dir['baseurl'] . '/qrcodes/' . $user->unique_id . '.png';
+
+            //$qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" . urlencode(site_url('/qrcode-info/?uid=' . $user->unique_id));
+            // $imageData = download_image($qr_url);
+            // $src = 'data:image/png;base64,' . base64_encode($imageData);
+            echo '<tr><td style="text-align:center;"><img src="' . $file_url . '"><hr></td></tr>';
+        }
+        echo '</tbody></table>';
+        $html = ob_get_clean();
+
+        require_once plugin_dir_path(__FILE__) . '/vendor/autoload.php';
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        header("Content-Type: application/pdf");
+        header("Content-Disposition: inline; filename='selected_qrcodes.pdf'");
+        echo $dompdf->output();
+        exit;
+
     }
-    echo '</tbody></table>';
-    $html = ob_get_clean();
+    if ($_GET['type'] === 'delete') {
 
-    require_once plugin_dir_path(__FILE__) . '/vendor/autoload.php';
-    $options = new Options();
-    $options->set('isRemoteEnabled', true);
-    $dompdf = new Dompdf($options);
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
+        $query = $wpdb->prepare("DELETE FROM $table WHERE id IN ($ids_placeholders)", ...$ids);
+        $result = $wpdb->query($query);
 
-    header("Content-Type: application/pdf");
-    header("Content-Disposition: inline; filename='selected_qrcodes.pdf'");
-    echo $dompdf->output();
+        if ($result !== false) {
+            echo "<script>alert('رکورد(ها) با موفقیت حذف شد.'); history.back();</script>";
+        } else {
+            echo "<script>alert('خطا در حذف رکورد(ها).'); history.back();</script>";
+        }
     exit;
+    }
+
+
 }
 ?>
