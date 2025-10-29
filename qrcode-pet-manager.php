@@ -43,20 +43,27 @@ register_activation_hook(__FILE__, function () {
     dbDelta($sql2);
 });
 
-
-
 // افزودن منوی مدیریت و زیرمنو
 add_action('admin_menu', function () {
-    // منوی اصلی
-    add_menu_page(
+
+    $hook = add_menu_page(
         'مدیریت QRCodeها',
         'QRCodeها',
         'manage_options',
         'qrcode-users',
         'qrcode_admin_page',
-        'dashicons-visibility', // آیکون دلخواه
+        'dashicons-pets', // آیکون دلخواه
         26 // موقعیت نمایش
     );
+
+    // تنظیم گزینه‌ی تعداد در هر صفحه
+    add_action("load-$hook", function () {
+        add_screen_option('per_page', [
+            'label'   => 'تعداد نمایش در هر صفحه',
+            'default' => 20,
+            'option'  => 'edit_qrcode_per_page',
+        ]);
+    });
 
     // زیرمنو: تاریخچه بازدیدها
     add_submenu_page(
@@ -67,12 +74,14 @@ add_action('admin_menu', function () {
         'qrcode-view-logs',         // slug زیرمنو
         'qrcode_view_logs_page'     // تابع نمایش صفحه
     );
-});
 
+
+});
 
 // فایل مربوط به مدیریت ادمین
 require_once plugin_dir_path(__FILE__) . 'admin.php';
 require_once plugin_dir_path(__FILE__) . 'qrcode-view-logs.php';
+
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css');
     wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', [], null, true);

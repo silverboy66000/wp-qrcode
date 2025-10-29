@@ -6,28 +6,6 @@ use Dompdf\Options;
 ini_set('max_execution_time', 300); // 5 دقیقه
 ini_set('memory_limit', '512M');
 
-
-add_action('admin_menu', function () {
-    $hook = add_menu_page(
-            'QRCode Users',
-            'QRCode Users',
-            'manage_options',
-            'qrcode-users',
-            'qrcode_admin_page',
-            'dashicons-qrcode',
-            30
-    );
-
-    // تنظیم گزینه‌ی تعداد در هر صفحه
-    add_action("load-$hook", function () {
-        add_screen_option('per_page', [
-                'label'   => 'تعداد نمایش در هر صفحه',
-                'default' => 20,
-                'option'  => 'edit_qrcode_per_page',
-        ]);
-    });
-});
-
 // هندل ذخیره تنظیمات صفحه
 add_filter('set-screen-option', function ($status, $option, $value) {
     if ('edit_qrcode_per_page' === $option) return (int) $value;
